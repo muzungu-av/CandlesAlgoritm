@@ -1,0 +1,7 @@
+version: "3.9"
+
+services:
+  fortran-candles:
+    build: .
+    volumes:
+      - ./output:/app/output
