@@ -33,7 +33,7 @@ program main
     cr = cairo_create(surface)
 
     ! фон
-    call cairo_set_source_rgb(cr, 1.0d0, 1.0d0, 1.0d0)
+    call cairo_set_source_rgb(cr, 8/255d0, 22/255d0, 32/255d0)
     call cairo_rectangle(cr, 0.0d0, 0.0d0, real(img_width, c_double), real(img_height, c_double))
     call cairo_fill(cr)
 

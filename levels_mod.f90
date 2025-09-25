@@ -62,8 +62,9 @@ contains
             if (level <= max_price .and. level >= min_price) then
                 y = height - (level - min_price) / (max_price - min_price) * height
 
-                call cairo_set_source_rgb(cr, 0.0d0, 0.0d0, 0.0d0)
-                call cairo_set_dash(cr, [5.0d0, 5.0d0], 2, 0.0d0)
+                call cairo_set_source_rgb(cr, 250/255.0d0, 250/255.0d0, 250/255.0d0)
+                call cairo_set_dash(cr, [1.0d0, 2.0d0], 2, 0.0d0) ! мелкие точки с пробелом
+                call cairo_set_line_width(cr, 0.2d0) ! очень тонкая линия
                 call cairo_move_to(cr, 0.0d0, y)
                 call cairo_line_to(cr, 300.0d0, y)
                 call cairo_stroke(cr)
