@@ -58,7 +58,8 @@ contains
         graph_max = ceiling(max_price / step) * step
 
         ! рисуем линии
-        do level = graph_min, graph_max, step
+        do i = 0, nint((graph_max - graph_min) / step)
+            level = graph_min + i * step
             if (level <= max_price .and. level >= min_price) then
                 y = height - (level - min_price) / (max_price - min_price) * height
 

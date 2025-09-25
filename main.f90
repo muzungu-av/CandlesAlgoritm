@@ -3,34 +3,49 @@ program main
     use cairo_interface
     use candle_mod
     use levels_mod
+    use bybit_api_mod
     implicit none
-
-    ! Определение типа для свечи
     type :: candle_t
         real(c_double) :: x, open, high, low, close
     end type candle_t
-
     type(c_ptr) :: surface, cr
     integer(c_int) :: status
-    character(len=30), parameter :: filename = "output/chart.png"//char(0)
-    integer, parameter :: n = 5
-    type(candle_t), dimension(n) :: candles
-    integer :: i
-    real(c_double) :: min_price, max_price
+    character(len=30) :: filename = "output/chart.png"
     integer, parameter :: img_width = 300, img_height = 200
+    type(candle_data), allocatable :: candles(:)
+    type(candle_t), allocatable :: candles_for_plot(:)
+    integer :: i, n, error
+    real(c_double) :: min_price, max_price
 
-    ! Заполнение массива свечей
-    candles(1) = candle_t(50.0d0, 10.0d0, 12.5d0, 9.5d0, 12.0d0)
-    candles(2) = candle_t(100.0d0, 12.0d0, 12.0d0, 10.5d0, 11.0d0)
-    candles(3) = candle_t(150.0d0, 11.0d0, 13.0d0, 11.0d0, 12.5d0)
-    candles(4) = candle_t(200.0d0, 12.5d0, 13.5d0, 12.0d0, 13.0d0)
-    candles(5) = candle_t(250.0d0, 13.0d0, 13.5d0, 12.0d0, 10.0d0)
+    ! Создаем директорию для вывода, если она не существует
+    call execute_command_line("mkdir -p output", wait=.true.)
 
-    ! Определение min и max цен
-    min_price = minval(candles%low)
-    max_price = maxval(candles%high)
+    ! Запрашиваем данные с Bybit
+    call fetch_ohlc_data("DOGEUSDT", 5, "D", candles, error)
+    if (error /= 0) then
+        print *, "Ошибка при запросе данных: ", error
+        stop
+    end if
 
-    ! Создание поверхности и контекста Cairo
+    n = size(candles)
+    allocate(candles_for_plot(n))
+
+    ! Преобразуем данные в формат для графика
+    do i = 1, n
+        candles_for_plot(i) = candle_t( &
+            real(i, c_double) * 50.0d0, &  ! x-координата (просто распределяем по оси X)
+            candles(i)%open, &
+            candles(i)%high, &
+            candles(i)%low, &
+            candles(i)%close &
+        )
+    end do
+
+    ! Определяем min и max цены
+    min_price = minval([(candles_for_plot(i)%low, i=1, n)])
+    max_price = maxval([(candles_for_plot(i)%high, i=1, n)])
+
+    ! Создаём поверхность и контекст Cairo
     surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, img_width, img_height)
     cr = cairo_create(surface)
 
@@ -44,13 +59,21 @@ program main
 
     ! Рисуем свечи
     do i = 1, n
-        call draw_candle(cr, candles(i)%x, candles(i)%open, candles(i)%high, &
-                         candles(i)%low, candles(i)%close, min_price, max_price, &
+        call draw_candle(cr, candles_for_plot(i)%x, candles_for_plot(i)%open, &
+                         candles_for_plot(i)%high, candles_for_plot(i)%low, &
+                         candles_for_plot(i)%close, min_price, max_price, &
                          real(img_height, c_double))
     end do
 
-    ! Сохранение PNG
-    status = cairo_surface_write_to_png(surface, filename)
+    ! Сохраняем PNG
+    status = cairo_surface_write_to_png(surface, filename // char(0))
+    if (status /= 0) then
+        print *, "Ошибка сохранения PNG: ", status
+    else
+        print *, "График успешно сохранен в ", filename
+    end if
+
+    ! Освобождаем ресурсы
     call cairo_destroy(cr)
     call cairo_surface_destroy(surface)
 end program main
