@@ -11,7 +11,8 @@ program main
     type(c_ptr) :: surface, cr
     integer(c_int) :: status
     character(len=30) :: filename = "output/chart.png"
-    integer, parameter :: img_width = 300, img_height = 200
+    integer, parameter :: img_height = 600
+    integer :: img_width, candle_width = 10, candle_spacing = 5
     type(candle_data), allocatable :: candles(:)
     type(candle_t), allocatable :: candles_for_plot(:)
     integer :: i, n, error
@@ -21,7 +22,7 @@ program main
     call execute_command_line("mkdir -p output", wait=.true.)
 
     ! Запрашиваем данные с Bybit
-    call fetch_ohlc_data("DOGEUSDT", 5, "D", candles, error)
+    call fetch_ohlc_data("DOGEUSDT", 100, "D", candles, error)
     if (error /= 0) then
         print *, "Ошибка при запросе данных: ", error
         stop
@@ -30,10 +31,13 @@ program main
     n = size(candles)
     allocate(candles_for_plot(n))
 
+    ! Рассчитываем ширину изображения
+    img_width = n * (candle_width + candle_spacing) + candle_spacing
+
     ! Преобразуем данные в формат для графика
     do i = 1, n
         candles_for_plot(i) = candle_t( &
-            real(i, c_double) * 50.0d0, &  ! x-координата (просто распределяем по оси X)
+            real(i, c_double) * (candle_width + candle_spacing), &  ! x-координата
             candles(i)%open, &
             candles(i)%high, &
             candles(i)%low, &
@@ -62,7 +66,7 @@ program main
         call draw_candle(cr, candles_for_plot(i)%x, candles_for_plot(i)%open, &
                          candles_for_plot(i)%high, candles_for_plot(i)%low, &
                          candles_for_plot(i)%close, min_price, max_price, &
-                         real(img_height, c_double))
+                         real(img_height, c_double), real(candle_width, c_double))
     end do
 
     ! Сохраняем PNG
