@@ -2,7 +2,8 @@
 
 Проект на Fortran + Cairo + Docker, для построения графиков типа японских свечей (OHLC) на основе биржевых данных.
 
-![Candlestick chart example](output/chart.png)
+![Candlestick chart example](https://raw.githubusercontent.com/muzungu-av/CandlesAlgoritm/main/output/chart.png)
+
 
 ## Структура проекта
 
