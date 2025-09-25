@@ -4,7 +4,6 @@
 
 ![Candlestick chart example](https://raw.githubusercontent.com/muzungu-av/CandlesAlgoritm/main/output/chart.png)
 
-
 ## Структура проекта
 
 ```

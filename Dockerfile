@@ -26,6 +26,7 @@ RUN apt-get update && \
     apt-get install -y \
     libcairo2 \
     libcurl4 \
+    curl \
     libgfortran5 \
     jq && \
     rm -rf /var/lib/apt/lists/*
