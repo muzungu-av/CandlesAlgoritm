@@ -12,11 +12,16 @@ RUN apt-get update && \
 
 # Копируем исходники
 WORKDIR /app
-COPY cairo_interface.f90 levels_mod.f90 candle_mod.f90 bybit_api_mod.f90 main.f90 /app/
+COPY save_candles_csv.f90 cairo_interface.f90 levels_mod.f90 candle_mod.f90 bybit_api_mod.f90 main.f90 /app/
 
-# Компилируем программу
-RUN gfortran -c cairo_interface.f90 candle_mod.f90 levels_mod.f90 bybit_api_mod.f90 main.f90 && \
-    gfortran cairo_interface.o candle_mod.o levels_mod.o bybit_api_mod.o main.f90 -o candle_app -lcairo -lcurl
+RUN gfortran -c bybit_api_mod.f90 && \
+    gfortran -c save_candles_csv.f90 && \
+    gfortran -c cairo_interface.f90 && \
+    gfortran -c candle_mod.f90 && \
+    gfortran -c levels_mod.f90 && \
+    gfortran -c main.f90 && \
+    gfortran bybit_api_mod.o save_candles_csv.o cairo_interface.o candle_mod.o levels_mod.o main.o -o candle_app -lcairo -lcurl
+
 
 # Этап 2: Финальный образ
 FROM debian:bullseye-slim
