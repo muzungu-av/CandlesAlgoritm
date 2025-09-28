@@ -1,6 +1,8 @@
 .vscode/
 *.json
 *.txt
+output/*
+candle_app
 
 # Prerequisites
 *.d
